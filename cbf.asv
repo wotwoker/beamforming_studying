@@ -1,5 +1,5 @@
 % CBF for CW和HFM信号
-%% 定义阵列和信号参数
+%% 1. 定义阵列和信号参数
 clear; clc; close all;
 
 N = 64;                 % 阵元数量
@@ -23,7 +23,7 @@ scan_angles_deg = -90:1:90;
 scan_angles_rad = deg2rad(scan_angles_deg);
 K = numel(scan_angles_deg); % K=181 个角度
 
-%% 模拟CW接收信号
+%% 2. 模拟CW接收信号
 tau = element_pos * sin(signal_doa_rad) / c; % 每个阵元相对于第一个阵元的时间延迟
 % 生成每个阵元接收到的信号 (N x M 矩阵)
 time_matrix = t - tau; % 第 n 个阵元在全局时间为t(m)的那一刻，所接收到的信号
@@ -33,7 +33,7 @@ received_signals = exp(1j * 2 * pi * f * time_matrix); % 窄带复指数
 noise = 0.1 * (randn(N, L) + 1j * randn(N, L));
 received_signals = received_signals + noise;
 
-%% 相移波束形成
+%% 3. 相移波束形成
 % 取 t=0 时刻的快照 (N x 1 向量)
 % S = [a(theta1), a(theta2), ...] (N x K) —— 阵列流形矩阵
 % a(theta) = exp(-j*k0*element_pos*sin(theta))
@@ -45,7 +45,7 @@ P = real( sum( conj(S) .* (Rxx * S), 1 ).' );  % (K x 1)，方向图：P(θ) = a
 to_dB = @(p) 10*log10( p / max(p(:)) + eps );% 定义归一化转dB函数
 P_db = to_dB(P);% 转换为dB
 
-%% 计算并打印-3dB波束宽度
+%% 4.计算并打印-3dB波束宽度
 % 找到峰值索引
 [~, peak_idx] = max(P_db);
 % 从峰值向左寻找-3dB点
@@ -66,8 +66,8 @@ fprintf('主瓣峰值位于: %d°\n', scan_angles_deg(peak_idx));
 fprintf('-3dB点位于: %d° 和 %d°\n', left_angle, right_angle);
 fprintf('波束宽度 (HPBW) 约为: %d°\n', hpbw);
 
-%% 绘制方向图、波束域、基元域信号图
-figure(1);% 绘制原始方向图
+%% 5. 绘制原始方向图
+figure(1);
 plot(scan_angles_deg, P_db, 'DisplayName', 'CBF');
 hold on;
 plot([left_angle, right_angle], [-3, -3], 'k', 'LineWidth', 2, 'DisplayName', sprintf('-3dB宽度: %d°', hpbw));
@@ -80,9 +80,10 @@ plot([signal_doa_deg, signal_doa_deg], [-50, 5], 'r--', 'DisplayName', true_doa_
 hold off;
 legend('show'); 
 
+%% CW信号基元域与波束域绘图
 B_phase = (conj(S).') * received_signals; % 相移法，每一行是一条角度的时序
 %B_phase_pow = abs(B_phase).^2;
-%B_phase_db  = to_dB(B_phase_pow);
+% B_phase_db  = to_dB(B_phase_pow);
 
 figure(2);% 绘制波束空间的时间序列
 imagesc(t, scan_angles_deg, abs(B_phase)); % imagesc绘制颜色图(X轴, Y轴, 矩阵数据）
@@ -162,8 +163,8 @@ fprintf('[HFM] 主瓣峰值位于: %d°\n', scan_angles_deg(peak_idx_hfm));
 fprintf('[HFM] -3dB点位于: %d° 和 %d°\n', left_angle_hfm, right_angle_hfm);
 fprintf('[HFM] 波束宽度 (HPBW) 约为: %d°\n', hpbw_hfm);
 
-%% HFM 方向图、波束域、基元域信号图
-figure(4);% HFM宽带延时求和方向图
+%% HFM 宽带延时求和方向图
+figure(3);
 plot(scan_angles_deg, P_db_hfm, 'DisplayName', 'DAS (HFM)');
 hold on;
 plot([left_angle_hfm, right_angle_hfm], [-3, -3], 'k', 'LineWidth', 2, ...
@@ -175,28 +176,18 @@ title('HFM 宽带延时求和方向图');
 xlabel('角度(°)'); ylabel('归一化功率(dB)');
 legend('show'); hold off;
 
-figure(5);% HFM 波束空间的时间序列（延时求和）
+%% HFM 波束空间的时间序列（延时求和）
+figure(4);
 imagesc(t, scan_angles_deg, abs(B_das));     % 幅度（也可改成 10*log10(abs(B_das).^2)）
 set(gca, 'YDir', 'normal');
 colorbar;
 title('HFM 波束空间的时间序列（延时求和，幅度）');
 xlabel('时间 (s)'); ylabel('扫描角度 (°)');
 
-figure(6);% 绘制 HFM 信号的阵元域图像
-% 使用 imagesc 绘制 N x L 的接收信号矩阵的实部
-imagesc(t, 1:N, real(received_signals_hfm));
-set(gca, 'YDir', 'normal');
-colorbar;
-title('HFM 信号阵元域 (实部)');
-xlabel('时间 (s)');
-ylabel('阵元索引 (Sensor Index)');
-
-
-
 %% 可视化生成的HFM基带信号
 % 为了绘图，我们需要脚本第一部分定义的变量: t, hfm_signal_base, f_start, f_end, T, phi, fs
 % --- 创建新图形窗口 ---
-figure(7);
+figure(5);
 % --- 1. 绘制信号的实部波形 ---
 subplot(2, 1, 1);
 plot(t, real(hfm_signal_base),'DisplayName', 'HFM实部');
@@ -222,6 +213,6 @@ ylim([f_end-100, f_start+100]); % 设置一个合适的Y轴范围
 
 % --- 3. (推荐) 绘制谱图 (Spectrogram)，最直观的显示方式 ---
 % 需要 Signal Processing Toolbox
-figure(8);
+figure(6);
 spectrogram(hfm_signal_base, kaiser(128, 5), 120, 256, fs, 'yaxis');
 title('HFM信号的谱图（时频分析）');

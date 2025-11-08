@@ -110,6 +110,14 @@ xlabel('时间 (s)');
 ylabel('扫描角度 (°)');
 fprintf('完成!\n');
 
+figure(3);% 绘制 CW 信号的阵元域图像 
+% 使用 imagesc 绘制 N x L 的接收信号矩阵的实部
+imagesc(t, 1:N, real(received_signals));
+set(gca, 'YDir', 'normal'); % 将y轴方向设置为正常（阵元1在下，64在上）
+colorbar; % 显示颜色条
+title('CW 信号阵元域 (实部)');
+xlabel('时间 (s)');
+ylabel('阵元索引 (Sensor Index)');
 
 
 
@@ -197,7 +205,7 @@ doa_estimate_mvdr_hfm = scan_angles_deg(idx_hfm);
 fprintf('[HFM] MVDR 估计角度: %.d°\n', doa_estimate_mvdr_hfm);
 
 %% 8. HFM 结果可视化
-figure(3);
+figure(4);
 plot(scan_angles_deg, P_mvdr_hfm_db, 'LineWidth', 1.5, 'DisplayName', 'MVDR (HFM)');
 hold on;
 xline(signal_doa_deg, '--r', 'LineWidth', 1.5, 'DisplayName', '真实DOA');
@@ -206,10 +214,18 @@ title('宽带(HFM)信号的 MVDR 空间谱 (频域平均法)');
 xlabel('角度 (°)'); ylabel('归一化功率 (dB)');
 legend('show', 'Location', 'best');
 
-figure(4);
+figure(5);
 imagesc(t, scan_angles_deg, abs(B_mvdr_hfm_time_domain));
 set(gca, 'YDir', 'normal');
 colorbar;
 title('宽带(HFM)信号的MVDR波束空间时间序列 (频域合成法)');
 xlabel('时间 (s)');
 ylabel('扫描角度 (°)');
+
+figure(6);% 绘制 HFM 信号的阵元域图像
+imagesc(t, 1:N, real(received_signals_hfm));
+set(gca, 'YDir', 'normal');
+colorbar;
+title('HFM 信号阵元域 (实部)');
+xlabel('时间 (s)');
+ylabel('阵元索引 (Sensor Index)');
