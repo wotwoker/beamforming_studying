@@ -98,7 +98,14 @@ ylim([0 0.3]); % 显示 0 - 300 Hz (这里的单位是 kHz，所以是 0.3)
 colormap jet;
 
 subplot(3,2,6);
-spectrogram(sigB, hann(window_len), noverlap, nfft, fs, 'yaxis');
+[s, f, t] = spectrogram(sigB, hann(window_len), noverlap, nfft, fs);
+S_dB = 20*log10(abs(s) + eps);
+imagesc(t, f, S_dB);
+axis xy; 
 title('信号 B 时频图 (STFT)');
-ylim([0 0.3]); 
+ylabel('频率 (Hz)');
+xlabel('时间 (s)');
+ylim([0 300]);            % 同样改为 300
 colormap jet;
+colorbar;
+clim([-150 0])
