@@ -15,7 +15,7 @@ pulse_duration = 50 * period;
 t_start1 = 0.02;        % 第一个脉冲在 20ms 处开始
 
 % 定义 4 种微小的毫秒级间隔 (Gaps)
-gaps = [0.002, 0.005, 0.010, 0.020]; 
+gaps = [0.005, 0.010, 0.020, 0.040]; 
 N_scenarios = length(gaps);
 
 %% 2. 信号生成
@@ -51,7 +51,7 @@ for i = 1:N_scenarios
     sig_temp(idx1_start:idx1_end) = soft_envelope .* cos(2*pi*f0*t(idx1_start:idx1_end));
     
     % 填入第二个脉冲 (带柔和边缘)
-    t_start2 = t_start1 + pulse_duration + gap;
+    t_start2 = t_start1 + gap;
     idx2_start = round(t_start2 * fs) + 1;
     idx2_end = idx2_start + N_pulse - 1;
     sig_temp(idx2_start:idx2_end) = soft_envelope .* cos(2*pi*f0*t(idx2_start:idx2_end));
@@ -59,8 +59,8 @@ for i = 1:N_scenarios
     signals(i, :) = sig_temp + 0.01 * randn(size(t));
 end
 
-%% 3. STFT 参数设计 (0.8ms 短窗)
-win_duration = 0.0008;                 
+%% 3. STFT 参数设计 (1.0ms 短窗)
+win_duration = 0.0010;                 
 window_len = round(win_duration * fs); 
 noverlap = round(window_len * 0.8);    
 nfft = 4096; 
